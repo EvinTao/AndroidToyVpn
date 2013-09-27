@@ -84,7 +84,7 @@ static int get_interface(char *name)
 static int get_tunnel(char *port, char *secret)
 {
     // We use an IPv6 socket to cover both IPv4 and IPv6.
-    int tunnel = socket(AF_INET6, SOCK_DGRAM, 0);
+    int tunnel = socket(AF_INET6, SOCK_STREAM, 0);
     int flag = 1;
     setsockopt(tunnel, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
     flag = 0;
@@ -104,6 +104,20 @@ static int get_tunnel(char *port, char *secret)
         usleep(100000);
     }
 
+	if (listen(tunnel, 10) < 0) {
+		perror("listen socket error");
+		return 1;
+	}
+
+	int connfd;
+	socklen_t clilen;
+	struct sockaddr_in cliaddr;
+
+	clilen = sizeof(cliaddr);
+	connfd = accept(tunnel, (struct sockaddr *) &cliaddr, &clilen);
+	return connfd;
+
+	/*
     // Receive packets till the secret matches.
     char packet[1024];
     socklen_t addrlen;
@@ -120,6 +134,7 @@ static int get_tunnel(char *port, char *secret)
     // Connect to the client as we only handle one client at a time.
     connect(tunnel, (sockaddr *)&addr, addrlen);
     return tunnel;
+	*/
 }
 
 static void build_parameters(char *parameters, int size, int argc, char **argv)

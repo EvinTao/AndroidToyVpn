@@ -37,11 +37,14 @@ public class ToyVpnClient extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.form);
 
-        mServerAddress = (TextView) findViewById(R.id.address);
+		mServerAddress = (TextView) findViewById(R.id.address);
         mServerPort = (TextView) findViewById(R.id.port);
         mSharedSecret = (TextView) findViewById(R.id.secret);
 
 		//mServerAddress.setText(stringFromJNI());
+
+		mServerAddress.setText("127.0.0.1");
+		mServerPort.setText("2236");
 
         findViewById(R.id.connect).setOnClickListener(this);
     }

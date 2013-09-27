@@ -29,8 +29,9 @@ import android.widget.Toast;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
+import java.nio.channels.SocketChannel;
 
 public class ToyVpnService extends VpnService implements Handler.Callback, Runnable {
     private static final String TAG = "ToyVpnService";
@@ -94,8 +95,8 @@ public class ToyVpnService extends VpnService implements Handler.Callback, Runna
             // This greatly reduces the complexity of seamless handover, which
             // tries to recreate the tunnel without shutting down everything.
             // In this demo, all we need to know is the server address.
-            InetSocketAddress server = new InetSocketAddress(
-                    mServerAddress, Integer.parseInt(mServerPort));
+			InetSocketAddress server = new InetSocketAddress(
+					mServerAddress, Integer.parseInt(mServerPort));
 
             // We try to create the tunnel for several times. The better way
             // is to work with ConnectivityManager, such as trying only when
@@ -130,19 +131,25 @@ public class ToyVpnService extends VpnService implements Handler.Callback, Runna
     }
 
     private boolean run(InetSocketAddress server) throws Exception {
-        DatagramChannel tunnel = null;
+        SocketChannel tunnel = null;
         boolean connected = false;
         try {
-            // Create a DatagramChannel as the VPN tunnel.
-            tunnel = DatagramChannel.open();
+            // Create a SocketChannel as the VPN tunnel.
+            tunnel = SocketChannel.open();
 
+			/*
             // Protect the tunnel before connecting to avoid loopback.
             if (!protect(tunnel.socket())) {
                 throw new IllegalStateException("Cannot protect the tunnel");
             }
+			*/
+
+			Log.d(TAG, "Connecting: " + server);
 
             // Connect to the server.
             tunnel.connect(server);
+
+			Log.d(TAG, "Connected");
 
             // For simplicity, we use the same thread for both reading and
             // writing. Here we put the tunnel into non-blocking mode.
@@ -253,7 +260,7 @@ public class ToyVpnService extends VpnService implements Handler.Callback, Runna
         return connected;
     }
 
-    private void handshake(DatagramChannel tunnel) throws Exception {
+    private void handshake(SocketChannel tunnel) throws Exception {
         // To build a secured tunnel, we should perform mutual authentication
         // and exchange session keys for encryption. To keep things simple in
         // this demo, we just send the shared secret in plaintext and wait
